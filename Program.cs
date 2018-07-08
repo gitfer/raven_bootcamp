@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Raven.Client.Documents;
 
 namespace raven_bootcamp
@@ -20,6 +21,9 @@ namespace raven_bootcamp
             using (var session = DocumentStoreHolder.Store.OpenSession())
             {
                 var p = session.Load<Product>("products/1-A");
+                var p1 = session.Load<Product>("products/1-A");
+                var p2 = session.Load<Product>("products/1-A");
+                Debug.Assert(ReferenceEquals(p1, p2));
                 System.Console.WriteLine(p.Name);
             }
         }
