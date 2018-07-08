@@ -17,7 +17,7 @@ namespace raven_bootcamp
 
             documentStore.Initialize();
 
-            using (var session = documentStore.OpenSession())
+            using (var session = DocumentStoreHolder.Store.OpenSession())
             {
                 var p = session.Load<Product>("products/1-A");
                 System.Console.WriteLine(p.Name);
