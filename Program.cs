@@ -1,7 +1,8 @@
-﻿using System;
+﻿using static System.Console;
 using System.Diagnostics;
 using System.Linq;
 using Raven.Client.Documents;
+using NorthwindModels;
 
 namespace raven_bootcamp
 {
@@ -9,28 +10,56 @@ namespace raven_bootcamp
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
 
-            var documentStore = new DocumentStore
+            while (true)
             {
-                Urls = new[] { "http://localhost:8080" },
-                Database = "Northwind"
-            };
+                WriteLine("Please, enter an order # (0 to exit): ");
 
-            documentStore.Initialize();
+                int orderNumber;
+                if (!int.TryParse(ReadLine(), out orderNumber))
+                {
+                    WriteLine("Order # is invalid.");
+                    continue;
+                }
 
+                if (orderNumber == 0) break;
+
+                PrintOrder(orderNumber);
+            }
+
+            WriteLine("Goodbye!");
+        }
+
+        private static void PrintOrder(int orderNumber)
+        {
             using (var session = DocumentStoreHolder.Store.OpenSession())
             {
-                var p = session.Load<Product>("products/1-A");
                 var order = session
-                    .Include<Order>(x => x.Company)
-                    .Include(x => x.Employee)
-                    .Include(x => x.Lines.Select(l => l.Product))
-                    .Load("orders/830-A");
-                var companyForOrder = session.Load<Company>(order.Company);
-                System.Console.WriteLine(order.Freight);
-                System.Console.WriteLine(order.Company);
-                System.Console.WriteLine(companyForOrder.Name);
+                    .Include<Order>(o => o.Company)
+                    .Include(o => o.Employee)
+                    .Include(o => o.Lines.Select(l => l.Product))
+                    .Load($"orders/{orderNumber}-A");
+
+                if (order == null)
+                {
+                    WriteLine($"Order #{orderNumber} not found.");
+                    return;
+                }
+
+                WriteLine($"Order #{orderNumber}");
+
+                var c = session.Load<Company>(order.Company);
+                WriteLine($"Company : {c.Id} - {c.Name}");
+
+                var e = session.Load<Employee>(order.Employee);
+                WriteLine($"Employee: {e.Id} - {e.LastName}, {e.FirstName}");
+
+                foreach (var orderLine in order.Lines)
+                {
+                    var p = session.Load<Product>(orderLine.Product);
+                    WriteLine($"   - {orderLine.ProductName}," +
+                              $" {orderLine.Quantity} x {p.QuantityPerUnit}");
+                }
             }
         }
     }
