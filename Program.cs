@@ -19,9 +19,10 @@ namespace raven_bootcamp
 
             using (var session = documentStore.OpenSession())
             {
-                var p = session.Load<dynamic>("products/1-A");
+                var p = session.Load<Product>("products/1-A");
                 System.Console.WriteLine(p.Name);
             }
         }
     }
+
 }
