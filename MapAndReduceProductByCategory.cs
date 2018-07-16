@@ -4,7 +4,8 @@ using Raven.Client.Documents.Indexes;
 
 namespace raven_bootcamp
 {
-    public class MapAndReduce_Products_ByCategory : AbstractIndexCreationTask<Product, MapAndReduce_Products_ByCategory.Result>
+    public class MapAndReduce_Products_ByCategory :
+       AbstractIndexCreationTask<Product, MapAndReduce_Products_ByCategory.Result>
     {
         public class Result
         {
@@ -24,10 +25,7 @@ namespace raven_bootcamp
 
             Reduce = results =>
                 from result in results
-                group result by new
-                {
-                    result.Category
-                } into g
+                group result by result.Category into g
                 select new
                 {
                     Category = g.Key,
