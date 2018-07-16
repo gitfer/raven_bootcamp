@@ -17,9 +17,10 @@ namespace raven_bootcamp
         {
             Map = products =>
                 from product in products
+                let categoryName = LoadDocument<Category>(product.Category).Name
                 select new
                 {
-                    Category = product.Category,
+                    Category = categoryName,
                     Count = 1
                 };
 

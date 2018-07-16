@@ -150,13 +150,13 @@ namespace raven_bootcamp
             {
                 var results = session
                     .Query<MapAndReduce_Products_ByCategory.Result, MapAndReduce_Products_ByCategory>()
-                    .Include(x => x.Category)
+                    // .Include(x => x.Category)
                     .ToList();
 
                 foreach (var result in results)
                 {
-                    var category = session.Load<Category>(result.Category);
-                    Console.WriteLine($"{category.Name} has {result.Count} items.");
+                    // var category = session.Load<Category>(result.Category);
+                    Console.WriteLine($"{result.Category} has {result.Count} items.");
                 }
             }
         }
