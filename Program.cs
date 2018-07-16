@@ -122,26 +122,48 @@ namespace raven_bootcamp
                 }
             }
 
+            SearchTerm();
+            MapAndReduce();
+        }
+        private static void SearchTerm()
+        {
             using (var session = DocumentStoreHolder.Store.OpenSession())
             {
-                SearchTerm(session);
+                Console.Write("\nSearch terms (e.g. Peter*): ");
+                var searchTerms = Console.ReadLine();
+
+                foreach (var result in Search(session, searchTerms))
+                {
+                    Console.WriteLine($"{result.SourceId}\t{result.Type}\t{result.Name}");
+                }
             }
         }
-        private static void SearchTerm(IDocumentSession session)
+
+        private static void MapAndReduce()
         {
-            Console.Write("\nSearch terms (e.g. Peter*): ");
-            var searchTerms = Console.ReadLine();
 
-            foreach (var result in Search(session, searchTerms))
+            Console.WriteLine("\nMap And Reduce: ");
+            // RQL version:
+            // from index 'Products/ByCategory'
+            // include Category
+            using (var session = DocumentStoreHolder.Store.OpenSession())
             {
-                Console.WriteLine($"{result.SourceId}\t{result.Type}\t{result.Name}");
-            }
+                var results = session
+                    .Query<MapAndReduce_Products_ByCategory.Result, MapAndReduce_Products_ByCategory>()
+                    .Include(x => x.Category)
+                    .ToList();
 
+                foreach (var result in results)
+                {
+                    var category = session.Load<Category>(result.Category);
+                    Console.WriteLine($"{category.Name} has {result.Count} items.");
+                }
+            }
         }
         public static IEnumerable<People_Search.Result> Search(
     IDocumentSession session,
     string searchTerms
-)
+    )
         {
             var results = session.Query<People_Search.Result, People_Search>()
                 .Search(
