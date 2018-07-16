@@ -1,5 +1,7 @@
 using System;
+using System.Reflection;
 using Raven.Client.Documents;
+using Raven.Client.Documents.Indexes;
 
 namespace raven_bootcamp
 {
@@ -12,7 +14,13 @@ namespace raven_bootcamp
                 Urls = new[] { "http://localhost:8080" },
                 Database = "Northwind"
             };
-            return store.Initialize();
+            store.Initialize();
+
+            // Trova tutte le classi indice e le invia al server.
+            var asms = Assembly.GetExecutingAssembly();
+            IndexCreation.CreateIndexes(asms, store);
+
+            return store;
         });
         public static IDocumentStore Store => LazyStore.Value;
     }

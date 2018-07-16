@@ -4,6 +4,8 @@ using System.Linq;
 using Raven.Client.Documents;
 using NorthwindModels;
 using System;
+using System.Collections.Generic;
+using Raven.Client.Documents.Session;
 
 namespace raven_bootcamp
 {
@@ -119,6 +121,37 @@ namespace raven_bootcamp
                     Console.WriteLine($"{employee.LastName}, {employee.FirstName}");
                 }
             }
+
+            using (var session = DocumentStoreHolder.Store.OpenSession())
+            {
+                SearchTerm(session);
+            }
+        }
+        private static void SearchTerm(IDocumentSession session)
+        {
+            Console.Write("\nSearch terms (e.g. Peter*): ");
+            var searchTerms = Console.ReadLine();
+
+            foreach (var result in Search(session, searchTerms))
+            {
+                Console.WriteLine($"{result.SourceId}\t{result.Type}\t{result.Name}");
+            }
+
+        }
+        public static IEnumerable<People_Search.Result> Search(
+    IDocumentSession session,
+    string searchTerms
+)
+        {
+            var results = session.Query<People_Search.Result, People_Search>()
+                .Search(
+                    r => r.Name,
+                    searchTerms
+                )
+                .ProjectInto<People_Search.Result>()
+                .ToList();
+
+            return results;
         }
         private static void PrintOrder(int orderNumber)
         {
