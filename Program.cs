@@ -11,6 +11,31 @@ namespace raven_bootcamp
     {
         static void Main(string[] args)
         {
+            WriteLine("Choose unit: ");
+
+            int unitNumber;
+            if (!int.TryParse(ReadLine(), out unitNumber))
+            {
+                WriteLine("Unit is invalid.");
+            }
+
+            if (unitNumber == 0)
+            {
+                throw new ArgumentException($"Unit {unitNumber} not valid");
+            }
+            if (unitNumber == 1)
+            {
+                RunUnit1();
+            }
+            else if (unitNumber == 2)
+            {
+                RunUnit2();
+            }
+
+            WriteLine("Goodbye!");
+        }
+        private static void RunUnit1()
+        {
             // LOAD documents and related documents
             WriteLine("Please, enter an order # (e.g. 7. 0 to exit): ");
 
@@ -75,9 +100,26 @@ namespace raven_bootcamp
                 session.Delete(id);
                 session.SaveChanges();
             }
-            WriteLine("Goodbye!");
         }
 
+        private static void RunUnit2()
+        {
+            // Create index programmatically and use static index.
+            var store = DocumentStoreHolder.Store;
+            new Employees_ByFirstAndLastName().Execute(store);
+            using (var session = DocumentStoreHolder.Store.OpenSession())
+            {
+                var results = session
+                    .Query<Employee, Employees_ByFirstAndLastName>()
+                    .Where(x => x.FirstName == "Robert")
+                    .ToList();
+
+                foreach (var employee in results)
+                {
+                    Console.WriteLine($"{employee.LastName}, {employee.FirstName}");
+                }
+            }
+        }
         private static void PrintOrder(int orderNumber)
         {
             using (var session = DocumentStoreHolder.Store.OpenSession())

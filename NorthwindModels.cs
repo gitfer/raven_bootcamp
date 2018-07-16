@@ -18,6 +18,8 @@ namespace NorthwindModels
     {
         public string Line1 { get; set; }
         public string Line2 { get; set; }
+
+        public Location Location { get; set; }
         public string City { get; set; }
         public string Region { get; set; }
         public string PostalCode { get; set; }
@@ -83,6 +85,12 @@ namespace NorthwindModels
         public string Phone { get; set; }
         public string Fax { get; set; }
         public string HomePage { get; set; }
+    }
+
+    public class Location
+    {
+        public float Latitude { get; set; }
+        public float Longitude { get; set; }
     }
 
     public class Employee
