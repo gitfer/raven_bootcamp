@@ -176,6 +176,7 @@ namespace raven_bootcamp
             CreateStaticIndex();
             SearchTerm();
             MapAndReduce();
+            ServerSideProjections();
         }
 
         private static void CreateStaticIndex()
@@ -241,6 +242,40 @@ namespace raven_bootcamp
                     // var category = session.Load<Category>(result.Category);
                     Console.WriteLine($"{result.Category} has {result.Count} items.");
                 }
+            }
+        }
+        private static void ServerSideProjections()
+        {
+
+            Console.WriteLine("\nServer-side projection: ");
+            // RQL version:
+            // from Employees
+            // let format = Func<Employee, string> fo
+            // include Category
+            using (var session = DocumentStoreHolder.Store.OpenSession())
+            {
+                var results = session
+                    .Query<Employee>()
+                    .Select(e => new { Fullname = e.FirstName + " " + e.LastName })
+                    .ToList();
+
+                Console.WriteLine($"{results.First()}");
+                Console.WriteLine("\n Another version");
+                var resultsWithFunc = (from e in session.Query<Employee>()
+                                       let format = (Func<Employee, string>)(p => p.FirstName + " " + p.LastName)
+                                       select new
+                                       {
+                                           Fullname = format(e)
+                                       }).ToList();
+
+                Console.WriteLine("\n RQL version");
+                Console.WriteLine(@"
+                declare function output(e) {
+                    var format = function(p){ return p.FirstName + "" "" + p.LastName; };
+                    return { FullName: format(e) };
+                }
+                from Employees as e select output(e)
+                ");
             }
         }
     }
