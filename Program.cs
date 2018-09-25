@@ -177,6 +177,7 @@ namespace raven_bootcamp
             SearchTerm();
             MapAndReduce();
             ServerSideProjections();
+            CustomizeForStaleIndexes();
         }
 
         private static void CreateStaticIndex()
@@ -276,6 +277,32 @@ namespace raven_bootcamp
                 }
                 from Employees as e select output(e)
                 ");
+            }
+        }
+
+
+        private static void CustomizeForStaleIndexes()
+        {
+            Console.WriteLine("Customize for stale indexes:");
+            using (var session = DocumentStoreHolder.Store.OpenSession())
+            {
+                QueryStatistics stats;
+                Console.WriteLine("Start of query with Customize and WaitForNonStaleResults");
+                var query = session
+                    .Query<Order>().Statistics(out stats)
+                    .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)));
+                Console.WriteLine("End of query with Customize and WaitForNonStaleResults");
+                if (stats.IsStale)
+                {
+                    Console.WriteLine("Query is stale");
+                }
+                var orders = (
+                    from order in query
+                    where order.Company == "companies/1"
+                    orderby order.OrderedAt
+                    select order
+                    )
+                    .ToList();
             }
         }
     }
