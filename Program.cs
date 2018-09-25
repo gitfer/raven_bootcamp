@@ -106,6 +106,14 @@ namespace raven_bootcamp
 
         private static void RunUnit2()
         {
+            CreateStaticIndex();
+            SearchTerm();
+            MapAndReduce();
+        }
+
+        private static void CreateStaticIndex()
+        {
+            Console.WriteLine("Create Static Index");
             // Create index programmatically and use static index.
             var store = DocumentStoreHolder.Store;
             new Employees_ByFirstAndLastName().Execute(store);
@@ -121,9 +129,6 @@ namespace raven_bootcamp
                     Console.WriteLine($"{employee.LastName}, {employee.FirstName}");
                 }
             }
-
-            SearchTerm();
-            MapAndReduce();
         }
         private static void SearchTerm()
         {
@@ -150,7 +155,7 @@ namespace raven_bootcamp
             {
                 var results = session
                     .Query<MapAndReduce_Products_ByCategory.Result, MapAndReduce_Products_ByCategory>()
-                    // .Include(x => x.Category)
+                    .Include(x => x.Category)
                     .ToList();
 
                 foreach (var result in results)
@@ -160,8 +165,7 @@ namespace raven_bootcamp
                 }
             }
         }
-        public static IEnumerable<People_Search.Result> Search(
-    IDocumentSession session,
+        public static IEnumerable<People_Search.Result> Search(IDocumentSession session,
     string searchTerms
     )
         {
