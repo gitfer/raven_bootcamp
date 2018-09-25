@@ -104,81 +104,6 @@ namespace raven_bootcamp
             }
         }
 
-        private static void RunUnit2()
-        {
-            CreateStaticIndex();
-            SearchTerm();
-            MapAndReduce();
-        }
-
-        private static void CreateStaticIndex()
-        {
-            Console.WriteLine("Create Static Index");
-            // Create index programmatically and use static index.
-            var store = DocumentStoreHolder.Store;
-            new Employees_ByFirstAndLastName().Execute(store);
-            using (var session = DocumentStoreHolder.Store.OpenSession())
-            {
-                var results = session
-                    .Query<Employee, Employees_ByFirstAndLastName>()
-                    .Where(x => x.FirstName == "Robert")
-                    .ToList();
-
-                foreach (var employee in results)
-                {
-                    Console.WriteLine($"{employee.LastName}, {employee.FirstName}");
-                }
-            }
-        }
-        private static void SearchTerm()
-        {
-            using (var session = DocumentStoreHolder.Store.OpenSession())
-            {
-                Console.Write("\nSearch terms (e.g. Peter*): ");
-                var searchTerms = Console.ReadLine();
-
-                foreach (var result in Search(session, searchTerms))
-                {
-                    Console.WriteLine($"{result.SourceId}\t{result.Type}\t{result.Name}");
-                }
-            }
-        }
-
-        private static void MapAndReduce()
-        {
-
-            Console.WriteLine("\nMap And Reduce: ");
-            // RQL version:
-            // from index 'Products/ByCategory'
-            // include Category
-            using (var session = DocumentStoreHolder.Store.OpenSession())
-            {
-                var results = session
-                    .Query<MapAndReduce_Products_ByCategory.Result, MapAndReduce_Products_ByCategory>()
-                    .Include(x => x.Category)
-                    .ToList();
-
-                foreach (var result in results)
-                {
-                    // var category = session.Load<Category>(result.Category);
-                    Console.WriteLine($"{result.Category} has {result.Count} items.");
-                }
-            }
-        }
-        public static IEnumerable<People_Search.Result> Search(IDocumentSession session,
-    string searchTerms
-    )
-        {
-            var results = session.Query<People_Search.Result, People_Search>()
-                .Search(
-                    r => r.Name,
-                    searchTerms
-                )
-                .ProjectInto<People_Search.Result>()
-                .ToList();
-
-            return results;
-        }
         private static void PrintOrder(int orderNumber)
         {
             using (var session = DocumentStoreHolder.Store.OpenSession())
@@ -245,7 +170,78 @@ namespace raven_bootcamp
                     WriteLine($"{order.Id} - {order.OrderedAt}");
                 }
             }
+        }
+        private static void RunUnit2()
+        {
+            CreateStaticIndex();
+            SearchTerm();
+            MapAndReduce();
+        }
 
+        private static void CreateStaticIndex()
+        {
+            Console.WriteLine("Create Static Index");
+            // Create index programmatically and use static index.
+            var store = DocumentStoreHolder.Store;
+            new Employees_ByFirstAndLastName().Execute(store);
+            using (var session = DocumentStoreHolder.Store.OpenSession())
+            {
+                var results = session
+                    .Query<Employee, Employees_ByFirstAndLastName>()
+                    .Where(x => x.FirstName == "Robert")
+                    .ToList();
+
+                foreach (var employee in results)
+                {
+                    Console.WriteLine($"{employee.LastName}, {employee.FirstName}");
+                }
+            }
+        }
+        private static void SearchTerm()
+        {
+            using (var session = DocumentStoreHolder.Store.OpenSession())
+            {
+                Console.Write("\nSearch terms (e.g. Peter*): ");
+                var searchTerms = Console.ReadLine();
+
+                foreach (var result in Search(session, searchTerms))
+                {
+                    Console.WriteLine($"{result.SourceId}\t{result.Type}\t{result.Name}");
+                }
+            }
+        }
+        public static IEnumerable<People_Search.Result> Search(IDocumentSession session, string searchTerms)
+        {
+            var results = session.Query<People_Search.Result, People_Search>()
+                .Search(
+                    r => r.Name,
+                    searchTerms
+                )
+                .ProjectInto<People_Search.Result>()
+                .ToList();
+
+            return results;
+        }
+        private static void MapAndReduce()
+        {
+
+            Console.WriteLine("\nMap And Reduce: ");
+            // RQL version:
+            // from index 'Products/ByCategory'
+            // include Category
+            using (var session = DocumentStoreHolder.Store.OpenSession())
+            {
+                var results = session
+                    .Query<MapAndReduce_Products_ByCategory.Result, MapAndReduce_Products_ByCategory>()
+                    .Include(x => x.Category)
+                    .ToList();
+
+                foreach (var result in results)
+                {
+                    // var category = session.Load<Category>(result.Category);
+                    Console.WriteLine($"{result.Category} has {result.Count} items.");
+                }
+            }
         }
     }
 
