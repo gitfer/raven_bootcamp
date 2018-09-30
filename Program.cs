@@ -10,6 +10,7 @@ using Raven.Client.Documents.Operations;
 
 namespace raven_bootcamp
 {
+    using static Console;
     class Program
     {
         static void Main(string[] args)
@@ -27,14 +28,6 @@ namespace raven_bootcamp
                 throw new ArgumentException($"Unit {unitNumber} not valid");
             }
             RunUnit(unitNumber);
-            if (unitNumber == 1)
-            {
-                RunUnit1();
-            }
-            else if (unitNumber == 2)
-            {
-                RunUnit2();
-            }
 
             WriteLine("Goodbye!");
         }
@@ -298,18 +291,18 @@ namespace raven_bootcamp
         }
         private static void CustomizeForStaleIndexes()
         {
-            Console.WriteLine("Customize for stale indexes:");
+            WriteLine("Customize for stale indexes:");
             using (var session = DocumentStoreHolder.Store.OpenSession())
             {
                 QueryStatistics stats;
-                Console.WriteLine("Start of query with Customize and WaitForNonStaleResults");
+                WriteLine("Start of query with Customize and WaitForNonStaleResults");
                 var query = session
                     .Query<Order>().Statistics(out stats)
                     .Customize(x => x.WaitForNonStaleResults(TimeSpan.FromSeconds(5)));
-                Console.WriteLine("End of query with Customize and WaitForNonStaleResults");
+                WriteLine("End of query with Customize and WaitForNonStaleResults");
                 if (stats.IsStale)
                 {
-                    Console.WriteLine("Query is stale");
+                    WriteLine("Query is stale");
                 }
                 var orders = (
                     from order in query
@@ -320,9 +313,10 @@ namespace raven_bootcamp
                     .ToList();
             }
         }
+
         private static void RunUnit3()
         {
-            Console.WriteLine("Patching document without loading the entire document");
+            Console.WriteLine("1) Patching document without loading the entire document");
             using (var session = DocumentStoreHolder.Store.OpenSession())
             {
                 session.Advanced.Patch<Order, OrderLine>("orders/816-A",
@@ -338,7 +332,9 @@ namespace raven_bootcamp
                 );
                 session.SaveChanges();
             }
-            Console.WriteLine("Patching Products document batch");
+
+
+            Console.WriteLine("2) Patching Products document batch");
             var operation = DocumentStoreHolder.Store
             .Operations
                 .Send(new PatchByQueryOperation(@"from Products as p
@@ -348,6 +344,25 @@ namespace raven_bootcamp
                                     p.PricePerUnit = p.PricePerUnit * 1.1
                                 }"));
             operation.WaitForCompletion();
+
+            Console.WriteLine("3) Documents that match a pre-defined criteria are sent in batches from the server to the client. The client sends an acknowledgment to the server once it is done with processing the batch.The server keeps track of the latest document that was acknowledged by the client, so that processing can be continued from the latest acknowledged position if it was paused or interrupted.");
+
+            var subscriptionWorker = DocumentStoreHolder.Store
+                .Subscriptions
+                .GetSubscriptionWorker<Order>("Big Orders");
+
+            var subscriptionRuntimeTask = subscriptionWorker.Run(batch =>
+            {
+                foreach (var order in batch.Items)
+                {
+            // business logic here.
+            Console.WriteLine(order.Id);
+                }
+            });
+
+            WriteLine("Press any key to exit...");
+            ReadKey();
+
         }
     }
 
