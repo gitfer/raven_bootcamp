@@ -6,6 +6,7 @@ using NorthwindModels;
 using System;
 using System.Collections.Generic;
 using Raven.Client.Documents.Session;
+using Raven.Client.Documents.Operations;
 
 namespace raven_bootcamp
 {
@@ -337,6 +338,16 @@ namespace raven_bootcamp
                 );
                 session.SaveChanges();
             }
+            Console.WriteLine("Patching Products document batch");
+            var operation = DocumentStoreHolder.Store
+            .Operations
+                .Send(new PatchByQueryOperation(@"from Products as p
+                                where p.Discontinued = false
+                                update
+                                {
+                                    p.PricePerUnit = p.PricePerUnit * 1.1
+                                }"));
+            operation.WaitForCompletion();
         }
     }
 
