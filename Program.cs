@@ -25,6 +25,7 @@ namespace raven_bootcamp
             {
                 throw new ArgumentException($"Unit {unitNumber} not valid");
             }
+            RunUnit(unitNumber);
             if (unitNumber == 1)
             {
                 RunUnit1();
@@ -35,6 +36,22 @@ namespace raven_bootcamp
             }
 
             WriteLine("Goodbye!");
+        }
+
+        private static void RunUnit(int unitNumber)
+        {
+            switch (unitNumber)
+            {
+                case 1:
+                    RunUnit1();
+                    break;
+                case 2:
+                    RunUnit2();
+                    break;
+                case 3:
+                    RunUnit3();
+                    break;
+            }
         }
         private static void RunUnit1()
         {
@@ -179,7 +196,6 @@ namespace raven_bootcamp
             ServerSideProjections();
             CustomizeForStaleIndexes();
         }
-
         private static void CreateStaticIndex()
         {
             Console.WriteLine("Create Static Index");
@@ -279,8 +295,6 @@ namespace raven_bootcamp
                 ");
             }
         }
-
-
         private static void CustomizeForStaleIndexes()
         {
             Console.WriteLine("Customize for stale indexes:");
@@ -303,6 +317,25 @@ namespace raven_bootcamp
                     select order
                     )
                     .ToList();
+            }
+        }
+        private static void RunUnit3()
+        {
+            Console.WriteLine("Patching document without loading the entire document");
+            using (var session = DocumentStoreHolder.Store.OpenSession())
+            {
+                session.Advanced.Patch<Order, OrderLine>("orders/816-A",
+                x => x.Lines,
+                lines => lines.Add(new OrderLine
+                {
+                    Product = "products/1-a",
+                    ProductName = "Chai",
+                    PricePerUnit = 18M,
+                    Quantity = 1,
+                    Discount = 0
+                })
+                );
+                session.SaveChanges();
             }
         }
     }
